@@ -6,6 +6,8 @@ import uuid
 class MemoryStore:
     def __init__(self, storage_path="memory/storage.json"):
         self.storage_path = storage_path
+        # Ensure directory exists
+        os.makedirs(os.path.dirname(self.storage_path) if os.path.dirname(self.storage_path) else "memory", exist_ok=True)
         self.memories = self.load_memories()
     
     def load_memories(self):
@@ -13,25 +15,34 @@ class MemoryStore:
         if os.path.exists(self.storage_path):
             try:
                 with open(self.storage_path, 'r', encoding='utf-8') as f:
-                    return json.load(f)
+                    data = json.load(f)
+                    print(f"✅ Loaded {len(data)} memories from {self.storage_path}")
+                    return data
+            except json.JSONDecodeError:
+                print(f"⚠️ Corrupted memory file, starting fresh")
+                return []
             except Exception as e:
                 print(f"⚠️ Error loading memories: {e}")
                 return []
-        return []
+        else:
+            print(f"ℹ️ No memory file found at {self.storage_path}, creating new one")
+            return []
     
     def save_memories(self):
         """Save memories to disk"""
         try:
             # Create directory if it doesn't exist
-            os.makedirs(os.path.dirname(self.storage_path), exist_ok=True)
+            os.makedirs(os.path.dirname(self.storage_path) if os.path.dirname(self.storage_path) else "memory", exist_ok=True)
             
-            # Save to file
+            # Save to file with pretty printing
             with open(self.storage_path, 'w', encoding='utf-8') as f:
                 json.dump(self.memories, f, indent=2, ensure_ascii=False)
             
             print(f"✅ Saved {len(self.memories)} memories to {self.storage_path}")
+            return True
         except Exception as e:
             print(f"❌ Error saving memories: {e}")
+            return False
     
     def store_interaction(self, data):
         """Store a complete interaction"""
@@ -39,16 +50,22 @@ class MemoryStore:
             "id": str(uuid.uuid4()),
             "timestamp": datetime.now().isoformat(),
             "original_input": data.get("original_input"),
-            "input_type": data.get("input_type"),  # text/image/audio
+            "input_type": data.get("input_type"),
             "parsed_problem": data.get("parsed_problem"),
             "solution": data.get("solution"),
             "verification": data.get("verification"),
-            "feedback": data.get("feedback"),  # correct/incorrect
+            "feedback": data.get("feedback"),
             "user_comment": data.get("user_comment", "")
         }
         
         self.memories.append(memory)
-        self.save_memories()
+        success = self.save_memories()
+        
+        if success:
+            print(f"✅ Stored memory {memory['id']}")
+        else:
+            print(f"❌ Failed to store memory")
+        
         return memory["id"]
     
     def get_similar_problems(self, problem_text, limit=3):
@@ -56,7 +73,6 @@ class MemoryStore:
         if not self.memories:
             return []
         
-        # Simple keyword matching (in production, use embeddings)
         similar = []
         for memory in self.memories:
             parsed = memory.get("parsed_problem")
@@ -67,10 +83,7 @@ class MemoryStore:
                     if similarity > 0.3:
                         similar.append((memory, similarity))
         
-        # Sort by similarity (highest first)
         similar.sort(key=lambda x: x[1], reverse=True)
-        
-        # Return top N memories (without similarity scores)
         return [m[0] for m in similar[:limit]]
     
     def _simple_similarity(self, text1, text2):
@@ -96,5 +109,7 @@ class MemoryStore:
     def clear_memories(self):
         """Clear all memories"""
         self.memories = []
-        self.save_memories()
-        print("✅ All memories cleared")
+        success = self.save_memories()
+        if success:
+            print("✅ All memories cleared")
+        return success
