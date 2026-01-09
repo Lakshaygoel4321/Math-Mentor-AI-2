@@ -384,4 +384,5 @@ MEMORY_PATH=memory/interactions.json
 MIT License
 ```
 
-### `Live` (https://math-jee-mentor-ai-21.streamlit.app/)
+### `Live:` https://math-jee-mentor-ai-21.streamlit.app/
+### `Github link:` https://github.com/Lakshaygoel4321
