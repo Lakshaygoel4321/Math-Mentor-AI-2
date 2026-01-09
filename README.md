@@ -360,14 +360,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 [![Star History Chart](https://api.star-history.com/svg?repos=yourusername/math-mentor-ai&type=Date)](https://star-history.com/#yourusername/math-mentor-ai&Date)
 
----
-
-<div align="center">
-  <p>Made with ❤️ by Your Name</p>
-  <p>© 2026 Math Mentor. All rights reserved.</p>
-</div>
-```
-
 ***
 
 ## 📄 **Additional Files to Create**
