@@ -14,11 +14,10 @@ from io import BytesIO
 
 # Try to import audio recorder
 try:
-    from st_audiorec import st_audiorec
+    from audio_recorder_streamlit import audio_recorder
     AUDIO_RECORDER_AVAILABLE = True
 except ImportError:
     AUDIO_RECORDER_AVAILABLE = False
-
 
 
 # Page config
@@ -223,16 +222,23 @@ elif input_mode == "🎤 Audio":
     audio_file_name = None
     
     if audio_option == "🎙️ Record Audio" and AUDIO_RECORDER_AVAILABLE:
-        st.info("🎤 **Click the microphone button below to start/stop recording**")
+        st.info("🎤 **Click the button below to start recording, click again to stop**")
         
-        # Audio recorder - returns WAV audio data
-        wav_audio_data = st_audiorec()
+        # Audio recorder - returns bytes
+        audio_bytes = audio_recorder(
+            text="Click to record",
+            recording_color="#e74c3c",
+            neutral_color="#6aa36f",
+            icon_name="microphone",
+            icon_size="3x",
+        )
         
-        if wav_audio_data is not None:
-            st.audio(wav_audio_data, format='audio/wav')
-            audio_data = BytesIO(wav_audio_data)
+        if audio_bytes:
+            st.audio(audio_bytes, format="audio/wav")
+            audio_data = BytesIO(audio_bytes)
             audio_file_name = "recorded_audio.wav"
             st.success("✅ Audio recorded successfully!")
+
     
     elif audio_option == "📁 Upload Audio File":
         audio_file = st.file_uploader(
